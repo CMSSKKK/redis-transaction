@@ -23,6 +23,10 @@ class RedisServiceTest {
     @Autowired
     private StringRedisTemplate redisTemplate;
 
+    @Autowired
+    private RedisLuaService luaService;
+
+
     private final String key = "txKey";
     private final String copyKey = "copyKey";
 
@@ -95,6 +99,32 @@ class RedisServiceTest {
                 .isInstanceOf(IllegalArgumentException.class);
 
         //then
+        String value = redisTemplate.opsForValue().get(key);
+        assertThat(Integer.parseInt(value)).isEqualTo(1);
+    }
+
+    @Test
+    void incrAndCopy_luaTest() {
+
+        RedisDto redisDto = luaService.incrAndCopy(key, copyKey, 10);
+
+        assertThat(redisDto.getKey()).isEqualTo(copyKey);
+        assertThat(Integer.parseInt(redisDto.getValue())).isEqualTo(11);
+
+        //then
+        String value = redisTemplate.opsForValue().get(key);
+        assertThat(Integer.parseInt(value)).isEqualTo(11);
+    }
+
+
+    @Test
+    @DisplayName("트랜잭션안에서 exception이 발생하면 transaction이 discard 되는지 확인해본다.")
+    void incr_lua_in_tx_test_throw_exception() {
+
+        // when
+        assertThatThrownBy(() -> luaService.incr(key, true))
+                .isInstanceOf(RuntimeException.class);
+        // then
         String value = redisTemplate.opsForValue().get(key);
         assertThat(Integer.parseInt(value)).isEqualTo(1);
     }
