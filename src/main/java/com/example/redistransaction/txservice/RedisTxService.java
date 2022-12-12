@@ -15,7 +15,6 @@ public class RedisTxService implements RedisService {
     private final StringRedisTemplate stringRedisTemplate;
 
     public void incr(String key, boolean isException) {
-
         stringRedisTemplate.opsForValue().increment(key);
         if(isException) {
             throw new RuntimeException();

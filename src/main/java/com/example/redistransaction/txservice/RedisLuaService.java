@@ -17,7 +17,7 @@ public class RedisLuaService implements RedisService {
     private final RedisScript<Void> incrScript;
 
     @Override
-    @Transactional
+    //@Transactional
     public void incr(String key, boolean isException) {
         redisTemplate.execute(incrScript, List.of(key));
         if (isException) {

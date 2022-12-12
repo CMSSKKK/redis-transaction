@@ -23,6 +23,7 @@ public class RedisSessionCallbackService implements RedisService {
         List<Object> execute = redisTemplate.execute(new SessionCallback<>() {
             @Override
             public <K, V> List<Object> execute(RedisOperations<K, V> operations) throws DataAccessException {
+                operations.watch((K) key);
                 operations.multi();
                 operations.opsForValue().increment((K) key);
 
@@ -32,7 +33,6 @@ public class RedisSessionCallbackService implements RedisService {
                 return operations.exec();
             }
         });
-        assert execute != null;
         log.info("결과는={}", execute.get(0));
     }
 

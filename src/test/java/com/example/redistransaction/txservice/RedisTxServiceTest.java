@@ -1,6 +1,5 @@
 package com.example.redistransaction.txservice;
 
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -8,24 +7,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
-import static org.assertj.core.api.Assertions.*;
-
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
-class RedisServiceTest {
+class RedisTxServiceTest {
 
     @Autowired
     private RedisTxService redisTxService;
 
     @Autowired
-    private RedisSessionCallbackService sessionCallbackService;
-
-    @Autowired
     private StringRedisTemplate redisTemplate;
-
-    @Autowired
-    private RedisLuaService luaService;
-
 
     private final String key = "txKey";
     private final String copyKey = "copyKey";
@@ -37,64 +29,35 @@ class RedisServiceTest {
     }
 
     @Test
-    void incr_session_test() {
+    @DisplayName("예외가 발생하지 않으면, 정상적으로 key의 값이 1 증가한다. ")
+    void incr_tx_test() {
         // when
-        sessionCallbackService.incr(key, false);
+        redisTxService.incr(key, false);
 
         // then
         String value = redisTemplate.opsForValue().get(key);
         assertThat(Integer.parseInt(value)).isEqualTo(2);
-
     }
 
     @Test
     @DisplayName("트랜잭션안에서 exception이 발생하면 transaction이 discard 되는지 확인해본다.")
-    void incr_session_test_throw_exception() {
+    void incr_tx_test_throw_exception() {
         // when
-        assertThatThrownBy(() -> sessionCallbackService.incr(key, true))
+        assertThatThrownBy(() -> redisTxService.incr(key, true))
                 .isInstanceOf(RuntimeException.class);
-
-        //then
+        // then
         String value = redisTemplate.opsForValue().get(key);
         assertThat(Integer.parseInt(value)).isEqualTo(1);
-
     }
 
-
-
     @Test
-    void incrAndCopy_sessionTest_exception() {
+    @DisplayName("트랜잭션 내부에서 값을 조회해서 활용하고자하면 Exception이 발생한다.")
+    void incrAndCopy_txTest_exception() {
 
-        assertThatThrownBy(() -> sessionCallbackService.incrAndCopy(key, copyKey, 10))
+        assertThatThrownBy(() -> redisTxService.incrAndCopy(key, copyKey, 10))
                 .isInstanceOf(IllegalArgumentException.class);
 
         //then
-        String value = redisTemplate.opsForValue().get(key);
-        assertThat(Integer.parseInt(value)).isEqualTo(1);
-    }
-
-    @Test
-    void incrAndCopy_luaTest() {
-
-        RedisDto redisDto = luaService.incrAndCopy(key, copyKey, 10);
-
-        assertThat(redisDto.getKey()).isEqualTo(copyKey);
-        assertThat(Integer.parseInt(redisDto.getValue())).isEqualTo(11);
-
-        //then
-        String value = redisTemplate.opsForValue().get(key);
-        assertThat(Integer.parseInt(value)).isEqualTo(11);
-    }
-
-
-    @Test
-    @DisplayName("트랜잭션안에서 exception이 발생하면 transaction이 discard 되는지 확인해본다.")
-    void incr_lua_in_tx_test_throw_exception() {
-
-        // when
-        assertThatThrownBy(() -> luaService.incr(key, true))
-                .isInstanceOf(RuntimeException.class);
-        // then
         String value = redisTemplate.opsForValue().get(key);
         assertThat(Integer.parseInt(value)).isEqualTo(1);
     }
