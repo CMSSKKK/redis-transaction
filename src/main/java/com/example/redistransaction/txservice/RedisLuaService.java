@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -17,7 +16,6 @@ public class RedisLuaService implements RedisService {
     private final RedisScript<Void> incrScript;
 
     @Override
-    //@Transactional
     public void incr(String key, boolean isException) {
         redisTemplate.execute(incrScript, List.of(key));
         if (isException) {
