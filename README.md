@@ -123,8 +123,9 @@ public interface RedisService {
 - 그래서 DataSource와 TransactionManager를 Bean으로 등록하고 트랜잭션을 사용할 수 있도록 설정해야합니다.
 - 대부분 Redis만을 활용하는 경우가 없기때문에 저는 간단하게 적용을 위해서 Spring data Jpa와 embedded h2를 활용해서 JpaTransactionManager를 통해서 트랜잭션을 지원했습니다.
 - 그리고 redisTemplate의 경우 트랜잭션을 지원할 수 있도록 설정하고, 기본적인 트랜잭션 테스트만을 위해서 StringRedisTemplate만을 Bean으로 등록했습니다.
+<img width="916" alt="스크린샷 2022-12-13 오전 1 29 09" src="https://user-images.githubusercontent.com/81129309/207275756-b6c7c37b-adca-4111-bff1-17bf197546b8.png">
 
-![스크린샷 2022-12-13 오전 1.29.09](/Users/cmsskkk/Desktop/스크린샷 2022-12-13 오전 1.29.09.png)
+
 
 - @Transactional 어노테이션을 적용하는 구현입니다.
 
@@ -231,8 +232,8 @@ void incrAndCopy_txTest_exception() {
 ```
 
 - 위에서 redis-cli 예시와 같이 트랜잭션 동안의 명령어의 결과값은 queue에 저장되고, exec 될때 모두 반환해줍니다.
+![스크린샷 2022-12-13 오후 4 37 16](https://user-images.githubusercontent.com/81129309/207275883-4e9ec22d-f9af-4056-8773-59638bc7b7f4.png)
 
-  ![스크린샷 2022-12-13 오후 4.37.16](/Users/cmsskkk/Desktop/스크린샷 2022-12-13 오후 4.37.16.png)
 
 - ValueOperation의 get 메서드를 확인해보면 transaction과 pipeline 내부에서 사용시 null을 반환함을 정의합니다.
 
@@ -513,8 +514,8 @@ void incrAndCopy_luaTest() {
 ### Spring에서의 Pipeline
 
 - Spring에서는 Pipeline을 사용할 수 있도록 지원합니다.
+![스크린샷 2022-12-13 오후 5 47 33](https://user-images.githubusercontent.com/81129309/207275952-3200d4a1-be35-47ae-8b63-079a0b79cf32.png)
 
-![스크린샷 2022-12-13 오후 5.47.33](/Users/cmsskkk/Desktop/스크린샷 2022-12-13 오후 5.47.33.png)
 
 - redisTemplate의 excutePipelined() 메서드를 살펴보면 pipeline을 열고 세션콜백내의 명령어들을 실행하고 결과값 리스트를 반환하는 것을 볼 수 있습니다.
 - 이 때, 주의할 것으로 sessionCallback에서의 반환값은 null이 아니면 예외를 반환합니다.
